@@ -24,7 +24,7 @@
 * Fast and user-friendly workflow
 
 ---
-
+ 
 ### 🧠 Smart Category Detection
 
 * Automatically categorizes expenses based on description
