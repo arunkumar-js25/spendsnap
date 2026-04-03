@@ -37,6 +37,28 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => expenses = data);
   }
 
+  final categoryIcons = {
+    "Food": Icons.restaurant,
+    "Travel": Icons.directions_car,
+    "Shopping": Icons.shopping_bag,
+    "Bills": Icons.receipt,
+    "Medicine": Icons.local_hospital,
+    "Entertainment": Icons.movie,
+    "Investment": Icons.trending_up,
+    "Others": Icons.category,
+  };
+
+  final categoryColors = {
+    "Food": Colors.orange,
+    "Travel": Colors.blue,
+    "Shopping": Colors.purple,
+    "Bills": Colors.red,
+    "Medicine": Colors.green,
+    "Entertainment": Colors.teal,
+    "Investment": Colors.green,
+    "Others": Colors.grey,
+  };
+
   void _openAddScreen({double? prefilledAmount, String? prefilledDesc, String? prefilledCategory}) async {
     final result = await Navigator.push(
       context,
@@ -218,14 +240,23 @@ class _HomeScreenState extends State<HomeScreen> {
                           return Card(
                             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             child: ListTile(
-                            title: Text(e.description),
-                            subtitle: Text(
-                              "${e.category} • ${e.date.day}/${e.date.month}/${e.date.year}",
-                            ),
-                            trailing: Row(
+                              leading: CircleAvatar(
+                                backgroundColor:
+                                    (categoryColors[e.category] ?? Colors.grey).withOpacity(0.2),
+                                child: Icon(
+                                  categoryIcons[e.category] ?? Icons.category,
+                                  color: categoryColors[e.category] ?? Colors.grey,
+                                ),
+                              ),
+                              title: Text(e.description),
+                              subtitle: Text(
+                                "${e.category} • ${e.date.day}/${e.date.month}/${e.date.year}",
+                              ),
+                              trailing: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text("₹${e.amount.toStringAsFixed(2)}"),
+                                        Text("₹${e.amount.toStringAsFixed(2)}",
+                                        style: const TextStyle(fontWeight: FontWeight.bold),),
                                         IconButton(
                                           icon: const Icon(Icons.delete, color: Color.fromARGB(255, 132, 55, 49)),
                                           onPressed: () async {

@@ -88,7 +88,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             ),
             DropdownButton<String>(
               value: category,
-              items: ['Food', 'Travel', 'Shopping','Bills', 'Entertainment', 'Investment', 'Others']
+              items: ['Food', 'Travel', 'Shopping','Bills', 'Entertainment','Medicine','Investment', 'Others']
                   .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                   .toList(),
               onChanged: (val) => setState(() => category = val!),
