@@ -125,6 +125,16 @@ class _HomeScreenState extends State<HomeScreen> {
     return expenses.fold(0, (sum, e) => sum + e.amount);
   }
 
+  double getThisMonthTotal() {
+    final now = DateTime.now();
+
+    return expenses
+        .where((e) =>
+            e.date.month == now.month &&
+            e.date.year == now.year)
+        .fold(0, (sum, e) => sum + e.amount);
+  }
+
   double getThisWeekTotal() {
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
@@ -173,6 +183,17 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(title: const Text("Expenses")),
       body: Column(
             children: [
+              // ✅ THIS MONTH TOTAL  
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  "This Month: ₹${getThisMonthTotal().toStringAsFixed(2)}",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
               // ✅ WEEKLY INSIGHT
               Padding(
                 padding: const EdgeInsets.all(16),
