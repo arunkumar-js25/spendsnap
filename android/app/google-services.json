@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "591755881207",
+    "project_id": "spendsnap-97cc2",
+    "storage_bucket": "spendsnap-97cc2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:591755881207:android:e7b7d1eff7e958653501f2",
+        "android_client_info": {
+          "package_name": "com.arunkumarjs25.spendsnap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "591755881207-k4pdpr39e6cb30o6bgenc7k7me9v1k3u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbBDlZsLbYBewNFYFxJbh4VxaIU1FloJE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "591755881207-k4pdpr39e6cb30o6bgenc7k7me9v1k3u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
