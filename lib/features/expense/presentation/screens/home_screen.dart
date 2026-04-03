@@ -3,6 +3,7 @@ import 'package:spendsnap/data/db/database.dart';
 import 'add_expense_screen.dart';
 import 'package:spendsnap/features/scanner/presentation/qr_scanner_screen.dart';
 import 'package:spendsnap/core/utils/upi_parser.dart';
+import 'package:spendsnap/features/expense/presentation/widgets/summary_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -90,37 +91,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
   }
     
-
-    //Moved this logic to handle scanner result in QRScannerScreen to prevent multiple calls and ensure smooth UX
-    /*
-    void _openScanner() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const QRScannerScreen(),
-      ),
-    
-      if (result != null) {
-      final data = parseUpi(result);
-
-      final amount = double.tryParse(data["amount"] ?? "0") ?? 0;
-      final note = data["note"] ?? "";
-
-      final category = detectCategory(note);
-
-      // ✅ SHOW MESSAGE HERE
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("QR detected! Review and save")),
-      );
-
-      _openAddScreen(
-        prefilledAmount: amount,
-        prefilledDesc: note,
-        prefilledCategory: category,
-      );
-    }
-  }*/
-  
   double getTotal() {
     return expenses.fold(0, (sum, e) => sum + e.amount);
   }
@@ -183,65 +153,31 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(title: const Text("Expenses")),
       body: Column(
             children: [
-              // ✅ THIS MONTH TOTAL  
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  "This Month: ₹${getThisMonthTotal().toStringAsFixed(2)}",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Row(
+                  children: [
+                    buildSummaryCard(
+                      title: "This Week",
+                      amount: getThisWeekTotal(),
+                      color: Colors.blue,
+                      icon: Icons.calendar_view_week,
+                    ),
+                    buildSummaryCard(
+                      title: "Last Week",
+                      amount: getLastWeekTotal(),
+                      color: Colors.orange,
+                      icon: Icons.history,
+                    ),
+                    buildSummaryCard(
+                      title: "This Month",
+                      amount: getThisMonthTotal(),
+                      color: Colors.green,
+                      icon: Icons.calendar_month,
+                    ),
+                  ],
                 ),
               ),
-              // ✅ WEEKLY INSIGHT
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.insights, color: Colors.blue),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          getWeeklyInsight(),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // ✅ TOTAL SPEND
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  "Total: ₹${getTotal().toStringAsFixed(2)}",
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
-              // ✅ CATEGORY TOTALS
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Wrap(
-                  spacing: 10,
-                  children: getCategoryTotals().entries.map((entry) {
-                    return Chip(
-                      label: Text("${entry.key}: ₹${entry.value.toStringAsFixed(2)}"),
-                    );
-                  }).toList(),
-                ),
-              ),
-
               const SizedBox(height: 10),
               Expanded(
                 child: expenses.isEmpty
