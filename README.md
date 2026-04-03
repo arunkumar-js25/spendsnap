@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🚀 SpendSnap
 
 **SpendSnap** is a smart expense tracking app that simplifies daily expense management using QR scanning and intelligent insights.
