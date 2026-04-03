@@ -215,7 +215,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         itemCount: expenses.length,
                         itemBuilder: (_, index) {
                           final e = expenses[index];
-                          return ListTile(
+                          return Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            child: ListTile(
                             title: Text(e.description),
                             subtitle: Text(
                               "${e.category} • ${e.date.day}/${e.date.month}/${e.date.year}",
@@ -227,12 +229,32 @@ class _HomeScreenState extends State<HomeScreen> {
                                         IconButton(
                                           icon: const Icon(Icons.delete, color: Color.fromARGB(255, 132, 55, 49)),
                                           onPressed: () async {
-                                            await db.deleteExpense(e.id);
-                                            _loadExpenses();
-                                          },
+                                                final confirm = await showDialog<bool>(
+                                                  context: context,
+                                                  builder: (_) => AlertDialog(
+                                                    title: const Text("Delete Expense"),
+                                                    content: const Text("Are you sure you want to delete this expense?"),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(context, false),
+                                                        child: const Text("Cancel"),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(context, true),
+                                                        child: const Text("Delete"),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                                 if (confirm == true) {
+                                                    await db.deleteExpense(e.id);
+                                                    _loadExpenses();
+                                                  }
+                                                }
                                         ),
                                       ],
                                     ),
+                          )
                           );
                         },
                       ),
