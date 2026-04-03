@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:spendsnap/data/db/database.dart';
 import 'add_expense_screen.dart';
 import 'package:spendsnap/features/scanner/presentation/qr_scanner_screen.dart';
-import 'package:spendsnap/core/utils/upi_parser.dart';
 import 'package:spendsnap/features/expense/presentation/widgets/summary_card.dart';
+import 'package:spendsnap/core/utils/expense_calculator.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,17 +15,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final db = AppDatabase();
   List<Expense> expenses = [];
-
-  // 👇 ADD THIS FUNCTION HERE
-  Map<String, double> getCategoryTotals() {
-      final map = <String, double>{};
-
-      for (var e in expenses) {
-        map[e.category] = (map[e.category] ?? 0) + e.amount;
-      }
-
-      return map;
-  }
 
   @override
   void initState() {
@@ -90,79 +79,11 @@ class _HomeScreenState extends State<HomeScreen> {
         _loadExpenses(); // ✅ refresh list
       }
   }
-
-  double getTotal() {
-    return expenses.fold(0, (sum, e) => sum + e.amount);
-  }
-
-  double getThisMonthTotal() {
-    final now = DateTime.now();
-
-    return expenses
-        .where((e) =>
-            e.date.month == now.month &&
-            e.date.year == now.year)
-        .fold(0, (sum, e) => sum + e.amount);
-  }
-
-  double getThisWeekTotal() {
-    final now = DateTime.now();
-    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-
-    return expenses
-        .where((e) => e.date.isAfter(startOfWeek))
-        .fold(0, (sum, e) => sum + e.amount);
-  }
-
-  double getLastWeekTotal() {
-    final now = DateTime.now();
-
-    final startOfThisWeek =
-        now.subtract(Duration(days: now.weekday - 1));
-
-    final startOfLastWeek = startOfThisWeek.subtract(const Duration(days: 7));
-    final endOfLastWeek = startOfThisWeek;
-
-    return expenses
-        .where((e) =>
-            e.date.isAfter(startOfLastWeek) &&
-            e.date.isBefore(endOfLastWeek))
-        .fold(0, (sum, e) => sum + e.amount);
-  }
-
-  String getWeeklyInsight() {
-    final thisWeek = getThisWeekTotal();
-    final lastWeek = getLastWeekTotal();
-
-    if (lastWeek == 0) return "No data for last week";
-
-    final diff = thisWeek - lastWeek;
-
-    if (diff > 0) {
-      return "You spent ₹${diff.toStringAsFixed(0)} more than last week";
-    } else if (diff < 0) {
-      return "You saved ₹${(-diff).toStringAsFixed(0)} compared to last week";
-    } else {
-      return "Your spending is same as last week";
-    }
-  }
-
-  String getTopCategory() {
-    final map = getCategoryTotals();
-
-    if (map.isEmpty) return "No data";
-
-    final top = map.entries.reduce(
-      (a, b) => a.value > b.value ? a : b,
-    );
-
-    return "${top.key} (₹${top.value.toStringAsFixed(0)})";
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Expenses")),
+      appBar: AppBar(title: const Text("SpendSnap")),
       body: Column(
             children: [
               Padding(
@@ -170,94 +91,34 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   children: [
                     buildSummaryCard(
+                      title: "Today",
+                      amount: ExpenseCalculator.getTodayTotal(expenses),
+                      color: Colors.red,
+                      icon: Icons.today,
+                    ),
+                    buildSummaryCard(
                       title: "This Week",
-                      amount: getThisWeekTotal(),
+                      amount: ExpenseCalculator.getThisWeekTotal(expenses),
                       color: Colors.blue,
                       icon: Icons.calendar_view_week,
                     ),
                     buildSummaryCard(
-                      title: "Last Week",
-                      amount: getLastWeekTotal(),
-                      color: Colors.orange,
-                      icon: Icons.history,
-                    ),
-                    buildSummaryCard(
                       title: "This Month",
-                      amount: getThisMonthTotal(),
+                      amount: ExpenseCalculator.getThisMonthTotal(expenses),
                       color: Colors.green,
                       icon: Icons.calendar_month,
                     ),
                   ],
                 ),
               ),
-             // ✅ WEEKLY INSIGHT
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.insights, color: Colors.blue),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          getWeeklyInsight(),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              const SizedBox(height: 6),
               // ✅ TOTAL SPEND
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  "Total: ₹${getTotal().toStringAsFixed(2)}",
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
-              // ✅ CATEGORY TOTALS
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: getCategoryTotals().entries.map((entry) {
-                    final color = categoryColors[entry.key] ?? Colors.grey;
-
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: color.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        "${entry.key}: ₹${entry.value.toStringAsFixed(0)}",
-                        style: TextStyle(
-                          color: color,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-              Text("Top Spending: ${getTopCategory()}"),
               const SizedBox(height: 10),
               Expanded(
                 child: expenses.isEmpty
                     ? const Center(child: Column(
                                               mainAxisAlignment: MainAxisAlignment.center,
-                                              children: const [
+                                              children: [
                                                 Icon(Icons.receipt_long, size: 50, color: Colors.grey),
                                                 SizedBox(height: 10),
                                                 Text("No expenses yet"),
@@ -265,6 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               ],
                                             ),)
                     : ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 100),
                         itemCount: expenses.length,
                         itemBuilder: (_, index) {
                           final e = expenses[index];
