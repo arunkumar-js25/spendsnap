@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _loadExpenses(); // ✅ refresh list
       }
   }
-    
+
   double getTotal() {
     return expenses.fold(0, (sum, e) => sum + e.amount);
   }
@@ -147,6 +147,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  String getTopCategory() {
+    final map = getCategoryTotals();
+
+    if (map.isEmpty) return "No data";
+
+    final top = map.entries.reduce(
+      (a, b) => a.value > b.value ? a : b,
+    );
+
+    return "${top.key} (₹${top.value.toStringAsFixed(0)})";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -178,6 +190,68 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
+             // ✅ WEEKLY INSIGHT
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.insights, color: Colors.blue),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          getWeeklyInsight(),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // ✅ TOTAL SPEND
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  "Total: ₹${getTotal().toStringAsFixed(2)}",
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+              // ✅ CATEGORY TOTALS
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: getCategoryTotals().entries.map((entry) {
+                    final color = categoryColors[entry.key] ?? Colors.grey;
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        "${entry.key}: ₹${entry.value.toStringAsFixed(0)}",
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              Text("Top Spending: ${getTopCategory()}"),
               const SizedBox(height: 10),
               Expanded(
                 child: expenses.isEmpty
