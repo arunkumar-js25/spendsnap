@@ -12,10 +12,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int currentIndex = 0;
 
-  Map<String, double> categoryTotals = {};
-  String topCategory = "";
-  String weeklyInsight = "";
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

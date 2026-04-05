@@ -54,6 +54,8 @@ dependencies:
   # Scanner & Payments
   mobile_scanner: ^5.2.3
   url_launcher: ^6.3.0
+  image_picker: ^1.0.7
+  google_mlkit_barcode_scanning: ^0.12.0
 
   # Export
   excel: ^4.0.6

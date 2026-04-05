@@ -1,6 +1,5 @@
 Map<String, String> parseUpi(String uri) {
   final Uri parsed = Uri.parse(uri);
-
   return {
     "amount": parsed.queryParameters["am"] ??
         parsed.queryParameters["mam"] ??
