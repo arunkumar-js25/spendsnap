@@ -17,11 +17,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final db = AppDatabase();
   List<Expense> expenses = [];
-
+  List<Category> categories = [];
   @override
   void initState() {
     super.initState();
     _loadExpenses();
+    _loadCategories();
   }
 
   Future<void> _loadExpenses() async {
@@ -30,7 +31,21 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => expenses = data);
   }
 
-  final categoryIcons = {
+  Future<void> _loadCategories() async 
+  {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
+    final data =
+        await db.getUserCategories(user.uid);
+
+    setState(() {
+      categories = data;
+    });
+  }
+
+  /*final categoryIcons = {
     "Food": Icons.restaurant,
     "Travel": Icons.directions_car,
     "Shopping": Icons.shopping_bag,
@@ -50,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
     "Entertainment": Colors.teal,
     "Investment": Colors.green,
     "Others": Colors.grey,
-  };
+  };*/
 
   void _openAddScreen({double? prefilledAmount, String? prefilledDesc, String? prefilledCategory}) async {
     final result = await Navigator.push(
@@ -99,6 +114,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
   
+  Category? _findCategory(String name) 
+  {
+    try {
+
+      return categories.firstWhere(
+        (c) => c.name == name,
+      );
+
+    } catch (e) {
+
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,11 +143,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
 
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ProfileScreen(),
-                        ),
-                      );
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ProfileScreen(),
+                          ),
+                        ).then((_) {
+
+                          _loadCategories();
+
+                          _loadExpenses();
+                        });
 
                     },
                   ),
@@ -176,14 +210,43 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onLongPress: () {
                                   _openEditScreen(e);
                                 },
-                              leading: CircleAvatar(
+                              /*leading: CircleAvatar(
                                 backgroundColor:
                                     (categoryColors[e.category] ?? Colors.grey).withOpacity(0.2),
                                 child: Icon(
                                   categoryIcons[e.category] ?? Icons.category,
                                   color: categoryColors[e.category] ?? Colors.grey,
                                 ),
-                              ),
+                              ),*/
+                              leading: Builder(
+                                  builder: (_) {
+
+                                    final categoryData =
+                                        _findCategory(e.category);
+
+                                    final color = categoryData != null
+                                        ? Color(categoryData.colorValue)
+                                        : Colors.grey;
+
+                                    final icon = categoryData != null
+                                        ? IconData(
+                                            categoryData.iconCodePoint,
+                                            fontFamily: 'MaterialIcons',
+                                          )
+                                        : Icons.category;
+
+                                    return CircleAvatar(
+
+                                      backgroundColor:
+                                          color.withOpacity(0.2),
+
+                                      child: Icon(
+                                        icon,
+                                        color: color,
+                                      ),
+                                    );
+                                  },
+                                ),
                               title: Text(e.description),
                               subtitle: Text(
                                 "${e.category} • ${e.date.day}/${e.date.month}/${e.date.year}",

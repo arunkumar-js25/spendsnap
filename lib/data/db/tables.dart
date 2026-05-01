@@ -37,3 +37,19 @@ class Expenses extends Table {
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();*/
 }
+
+class Categories extends Table {
+
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get userId => text()();
+
+  TextColumn get name => text()();
+
+  IntColumn get colorValue => integer()();
+
+  IntColumn get iconCodePoint => integer()();
+
+  TextColumn get keywords => text()();
+
+}

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:spendsnap/features/category/presentation/manage_categories_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -79,12 +80,17 @@ class ProfileScreen extends StatelessWidget {
                 trailing: const Icon(Icons.arrow_forward_ios, size: 18),
 
                 onTap: () {
-
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ManageCategoriesScreen(),
+                    ),
+                  );
+                  /*ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text("Coming soon 🚀"),
                     ),
-                  );
+                  );*/
 
                 },
               ),

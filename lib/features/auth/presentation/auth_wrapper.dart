@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:spendsnap/data/db/database.dart';
 
 import 'package:spendsnap/features/auth/presentation/login_screen.dart';
 import 'package:spendsnap/features/expense/presentation/screens/main_screen.dart';
@@ -24,6 +25,10 @@ class AuthWrapper extends StatelessWidget {
 
         // ✅ Logged in
         if (snapshot.hasData) {
+          final user = snapshot.data!;
+          final db = AppDatabase();
+
+          db.seedDefaultCategories(user.uid);
           return const MainScreen();
         }
 

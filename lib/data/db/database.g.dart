@@ -501,15 +501,419 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   }
 }
 
+class $CategoriesTable extends Categories
+    with TableInfo<$CategoriesTable, Category> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CategoriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _colorValueMeta = const VerificationMeta(
+    'colorValue',
+  );
+  @override
+  late final GeneratedColumn<int> colorValue = GeneratedColumn<int>(
+    'color_value',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iconCodePointMeta = const VerificationMeta(
+    'iconCodePoint',
+  );
+  @override
+  late final GeneratedColumn<int> iconCodePoint = GeneratedColumn<int>(
+    'icon_code_point',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _keywordsMeta = const VerificationMeta(
+    'keywords',
+  );
+  @override
+  late final GeneratedColumn<String> keywords = GeneratedColumn<String>(
+    'keywords',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    name,
+    colorValue,
+    iconCodePoint,
+    keywords,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'categories';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Category> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('color_value')) {
+      context.handle(
+        _colorValueMeta,
+        colorValue.isAcceptableOrUnknown(data['color_value']!, _colorValueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_colorValueMeta);
+    }
+    if (data.containsKey('icon_code_point')) {
+      context.handle(
+        _iconCodePointMeta,
+        iconCodePoint.isAcceptableOrUnknown(
+          data['icon_code_point']!,
+          _iconCodePointMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_iconCodePointMeta);
+    }
+    if (data.containsKey('keywords')) {
+      context.handle(
+        _keywordsMeta,
+        keywords.isAcceptableOrUnknown(data['keywords']!, _keywordsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keywordsMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Category map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Category(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      colorValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color_value'],
+      )!,
+      iconCodePoint: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}icon_code_point'],
+      )!,
+      keywords: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}keywords'],
+      )!,
+    );
+  }
+
+  @override
+  $CategoriesTable createAlias(String alias) {
+    return $CategoriesTable(attachedDatabase, alias);
+  }
+}
+
+class Category extends DataClass implements Insertable<Category> {
+  final int id;
+  final String userId;
+  final String name;
+  final int colorValue;
+  final int iconCodePoint;
+  final String keywords;
+  const Category({
+    required this.id,
+    required this.userId,
+    required this.name,
+    required this.colorValue,
+    required this.iconCodePoint,
+    required this.keywords,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['name'] = Variable<String>(name);
+    map['color_value'] = Variable<int>(colorValue);
+    map['icon_code_point'] = Variable<int>(iconCodePoint);
+    map['keywords'] = Variable<String>(keywords);
+    return map;
+  }
+
+  CategoriesCompanion toCompanion(bool nullToAbsent) {
+    return CategoriesCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      name: Value(name),
+      colorValue: Value(colorValue),
+      iconCodePoint: Value(iconCodePoint),
+      keywords: Value(keywords),
+    );
+  }
+
+  factory Category.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Category(
+      id: serializer.fromJson<int>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      name: serializer.fromJson<String>(json['name']),
+      colorValue: serializer.fromJson<int>(json['colorValue']),
+      iconCodePoint: serializer.fromJson<int>(json['iconCodePoint']),
+      keywords: serializer.fromJson<String>(json['keywords']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'userId': serializer.toJson<String>(userId),
+      'name': serializer.toJson<String>(name),
+      'colorValue': serializer.toJson<int>(colorValue),
+      'iconCodePoint': serializer.toJson<int>(iconCodePoint),
+      'keywords': serializer.toJson<String>(keywords),
+    };
+  }
+
+  Category copyWith({
+    int? id,
+    String? userId,
+    String? name,
+    int? colorValue,
+    int? iconCodePoint,
+    String? keywords,
+  }) => Category(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    name: name ?? this.name,
+    colorValue: colorValue ?? this.colorValue,
+    iconCodePoint: iconCodePoint ?? this.iconCodePoint,
+    keywords: keywords ?? this.keywords,
+  );
+  Category copyWithCompanion(CategoriesCompanion data) {
+    return Category(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      name: data.name.present ? data.name.value : this.name,
+      colorValue: data.colorValue.present
+          ? data.colorValue.value
+          : this.colorValue,
+      iconCodePoint: data.iconCodePoint.present
+          ? data.iconCodePoint.value
+          : this.iconCodePoint,
+      keywords: data.keywords.present ? data.keywords.value : this.keywords,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Category(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('name: $name, ')
+          ..write('colorValue: $colorValue, ')
+          ..write('iconCodePoint: $iconCodePoint, ')
+          ..write('keywords: $keywords')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, userId, name, colorValue, iconCodePoint, keywords);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Category &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.name == this.name &&
+          other.colorValue == this.colorValue &&
+          other.iconCodePoint == this.iconCodePoint &&
+          other.keywords == this.keywords);
+}
+
+class CategoriesCompanion extends UpdateCompanion<Category> {
+  final Value<int> id;
+  final Value<String> userId;
+  final Value<String> name;
+  final Value<int> colorValue;
+  final Value<int> iconCodePoint;
+  final Value<String> keywords;
+  const CategoriesCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.colorValue = const Value.absent(),
+    this.iconCodePoint = const Value.absent(),
+    this.keywords = const Value.absent(),
+  });
+  CategoriesCompanion.insert({
+    this.id = const Value.absent(),
+    required String userId,
+    required String name,
+    required int colorValue,
+    required int iconCodePoint,
+    required String keywords,
+  }) : userId = Value(userId),
+       name = Value(name),
+       colorValue = Value(colorValue),
+       iconCodePoint = Value(iconCodePoint),
+       keywords = Value(keywords);
+  static Insertable<Category> custom({
+    Expression<int>? id,
+    Expression<String>? userId,
+    Expression<String>? name,
+    Expression<int>? colorValue,
+    Expression<int>? iconCodePoint,
+    Expression<String>? keywords,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (name != null) 'name': name,
+      if (colorValue != null) 'color_value': colorValue,
+      if (iconCodePoint != null) 'icon_code_point': iconCodePoint,
+      if (keywords != null) 'keywords': keywords,
+    });
+  }
+
+  CategoriesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? userId,
+    Value<String>? name,
+    Value<int>? colorValue,
+    Value<int>? iconCodePoint,
+    Value<String>? keywords,
+  }) {
+    return CategoriesCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      name: name ?? this.name,
+      colorValue: colorValue ?? this.colorValue,
+      iconCodePoint: iconCodePoint ?? this.iconCodePoint,
+      keywords: keywords ?? this.keywords,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (colorValue.present) {
+      map['color_value'] = Variable<int>(colorValue.value);
+    }
+    if (iconCodePoint.present) {
+      map['icon_code_point'] = Variable<int>(iconCodePoint.value);
+    }
+    if (keywords.present) {
+      map['keywords'] = Variable<String>(keywords.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CategoriesCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('name: $name, ')
+          ..write('colorValue: $colorValue, ')
+          ..write('iconCodePoint: $iconCodePoint, ')
+          ..write('keywords: $keywords')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ExpensesTable expenses = $ExpensesTable(this);
+  late final $CategoriesTable categories = $CategoriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [expenses];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [expenses, categories];
 }
 
 typedef $$ExpensesTableCreateCompanionBuilder =
@@ -759,10 +1163,223 @@ typedef $$ExpensesTableProcessedTableManager =
       Expense,
       PrefetchHooks Function()
     >;
+typedef $$CategoriesTableCreateCompanionBuilder =
+    CategoriesCompanion Function({
+      Value<int> id,
+      required String userId,
+      required String name,
+      required int colorValue,
+      required int iconCodePoint,
+      required String keywords,
+    });
+typedef $$CategoriesTableUpdateCompanionBuilder =
+    CategoriesCompanion Function({
+      Value<int> id,
+      Value<String> userId,
+      Value<String> name,
+      Value<int> colorValue,
+      Value<int> iconCodePoint,
+      Value<String> keywords,
+    });
+
+class $$CategoriesTableFilterComposer
+    extends Composer<_$AppDatabase, $CategoriesTable> {
+  $$CategoriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get colorValue => $composableBuilder(
+    column: $table.colorValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get iconCodePoint => $composableBuilder(
+    column: $table.iconCodePoint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get keywords => $composableBuilder(
+    column: $table.keywords,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CategoriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CategoriesTable> {
+  $$CategoriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get colorValue => $composableBuilder(
+    column: $table.colorValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get iconCodePoint => $composableBuilder(
+    column: $table.iconCodePoint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get keywords => $composableBuilder(
+    column: $table.keywords,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CategoriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CategoriesTable> {
+  $$CategoriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get colorValue => $composableBuilder(
+    column: $table.colorValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get iconCodePoint => $composableBuilder(
+    column: $table.iconCodePoint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get keywords =>
+      $composableBuilder(column: $table.keywords, builder: (column) => column);
+}
+
+class $$CategoriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CategoriesTable,
+          Category,
+          $$CategoriesTableFilterComposer,
+          $$CategoriesTableOrderingComposer,
+          $$CategoriesTableAnnotationComposer,
+          $$CategoriesTableCreateCompanionBuilder,
+          $$CategoriesTableUpdateCompanionBuilder,
+          (Category, BaseReferences<_$AppDatabase, $CategoriesTable, Category>),
+          Category,
+          PrefetchHooks Function()
+        > {
+  $$CategoriesTableTableManager(_$AppDatabase db, $CategoriesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CategoriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CategoriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CategoriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> colorValue = const Value.absent(),
+                Value<int> iconCodePoint = const Value.absent(),
+                Value<String> keywords = const Value.absent(),
+              }) => CategoriesCompanion(
+                id: id,
+                userId: userId,
+                name: name,
+                colorValue: colorValue,
+                iconCodePoint: iconCodePoint,
+                keywords: keywords,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String userId,
+                required String name,
+                required int colorValue,
+                required int iconCodePoint,
+                required String keywords,
+              }) => CategoriesCompanion.insert(
+                id: id,
+                userId: userId,
+                name: name,
+                colorValue: colorValue,
+                iconCodePoint: iconCodePoint,
+                keywords: keywords,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CategoriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CategoriesTable,
+      Category,
+      $$CategoriesTableFilterComposer,
+      $$CategoriesTableOrderingComposer,
+      $$CategoriesTableAnnotationComposer,
+      $$CategoriesTableCreateCompanionBuilder,
+      $$CategoriesTableUpdateCompanionBuilder,
+      (Category, BaseReferences<_$AppDatabase, $CategoriesTable, Category>),
+      Category,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
   $$ExpensesTableTableManager get expenses =>
       $$ExpensesTableTableManager(_db, _db.expenses);
+  $$CategoriesTableTableManager get categories =>
+      $$CategoriesTableTableManager(_db, _db.categories);
 }

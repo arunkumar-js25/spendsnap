@@ -1,5 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+  import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:spendsnap/data/db/database.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -30,8 +29,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _descController = TextEditingController();
   final _amountController = TextEditingController();
   final _uriController = TextEditingController();
-
-  String category = 'Food';
+  List<Category> categories = [];
+  String category = '';
   String type = 'Cash';
 
   @override
@@ -47,7 +46,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       category = e.category;
       type = e.type;
 
-      return;
     }
 
     if (widget.prefilledAmount != null) {
@@ -65,6 +63,29 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     if (widget.upiUri != null) {
       _uriController.text = widget.upiUri!;
     }
+
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async 
+  {
+   final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
+    final data =
+        await widget.db.getUserCategories(user.uid);
+
+    setState(() {
+
+      categories = data;
+
+      // ✅ only assign default if category empty
+      if (category.isEmpty && data.isNotEmpty) {
+
+        category = data.first.name;
+      }
+    });
   }
 
   void _saveExpense() async {
@@ -130,9 +151,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         'pa': pa,
         'pn': pn,
         'cu': cu,
-        if (am != null && am.isNotEmpty) 'am': am,
-        if (tn != null && tn.isNotEmpty) 'tn': tn,
-        if (aid != null && aid.isNotEmpty) 'aid': aid
+        'am': am,
+        'tn': tn,
+        'aid': aid
       },
     );
 
@@ -178,7 +199,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     if (widget.upiUri == null) return;
 
     final uri = Uri.parse(widget.upiUri!);
-    
+
     if (!await canLaunchUrl(uri)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("No UPI app found")),
@@ -247,7 +268,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             ),
             const SizedBox(height: 10),*/
 
-            DropdownButton<String>(
+            /*DropdownButton<String>(
               value: category,
               isExpanded: true,
               items: [
@@ -266,8 +287,52 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       ))
                   .toList(),
               onChanged: (val) => setState(() => category = val!),
-            ),
+            ),*/
+            DropdownButton<String>(
 
+              value: categories.any((c) => c.name == category)
+                  ? category
+                  : null,
+
+              isExpanded: true,
+
+              items: categories.map((c) {
+
+                return DropdownMenuItem<String>(
+
+                  value: c.name,
+
+                  child: Row(
+
+                    children: [
+
+                      Icon(
+                        IconData(
+                          c.iconCodePoint,
+                          fontFamily: 'MaterialIcons',
+                        ),
+
+                        color: Color(c.colorValue),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      Text(c.name),
+                    ],
+                  ),
+                );
+
+              }).toList(),
+
+              onChanged: (val) {
+
+                if (val == null) return;
+
+                setState(() {
+                  category = val;
+                });
+              },
+            ),
             const SizedBox(height: 20),
 
             ElevatedButton(
