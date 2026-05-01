@@ -1,4 +1,4 @@
-  import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:spendsnap/data/db/database.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -195,7 +195,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
-  Future<void> _payViaUPIDirect() async {
+  /*Future<void> _payViaUPIDirect() async {
     if (widget.upiUri == null) return;
 
     final uri = Uri.parse(widget.upiUri!);
@@ -234,7 +234,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         ],
       ),
     );
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
