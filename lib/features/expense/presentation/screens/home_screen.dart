@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:spendsnap/core/utils/sync_service.dart';
 import 'package:spendsnap/data/db/database.dart';
 import 'package:spendsnap/features/profile/presentation/profile_screen.dart';
 import 'add_expense_screen.dart';
@@ -15,7 +16,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final db = AppDatabase();
+  final db = appDatabase;
   List<Expense> expenses = [];
   List<Category> categories = [];
   @override
@@ -23,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadExpenses();
     _loadCategories();
+    //SyncService().syncAll();
   }
 
   Future<void> _loadExpenses() async {
@@ -277,7 +279,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   ),
                                                 );
                                                  if (confirm == true) {
-                                                    await db.deleteExpense(e.id);
+                                                    //await db.deleteExpense(e.id);
+                                                    await SyncService().deleteExpenseFromCloud(e);
                                                     _loadExpenses();
                                                   }
                                                 }

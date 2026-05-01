@@ -1,55 +1,182 @@
 import 'package:drift/drift.dart';
 
 class Expenses extends Table {
-  IntColumn get id => integer().autoIncrement()();
 
-  TextColumn get userId => text()();
+  // =========================================================
+  // 🔥 PRIMARY KEY
+  // =========================================================
 
-  // Core fields
-  TextColumn get description => text()();
-  TextColumn get category => text()();
-  RealColumn get amount => real()();
-  TextColumn get type => text()(); // Cash / UPI / Credit / Debit
+  IntColumn get id =>
+      integer().autoIncrement()();
 
-  DateTimeColumn get date => dateTime()();
+  // =========================================================
+  // 🔥 USER
+  // =========================================================
 
-  DateTimeColumn get createdAt => dateTime()();
+  TextColumn get userId =>
+      text()();
 
+  // =========================================================
+  // 🔥 SYNC
+  // =========================================================
+
+  BoolColumn get isSynced =>
+
+      boolean().withDefault(
+        const Constant(false),
+      )();
+
+  TextColumn get firestoreId =>
+
+      text().nullable()();
+
+  // =========================================================
+  // 🔥 CORE FIELDS
+  // =========================================================
+
+  TextColumn get description =>
+      text()();
+
+  TextColumn get category =>
+      text()();
+
+  RealColumn get amount =>
+      real()();
+
+  TextColumn get type =>
+      text()();
+
+  DateTimeColumn get date =>
+      dateTime()();
+
+  // =========================================================
+  // 🔥 TIMESTAMPS
+  // =========================================================
+
+  DateTimeColumn get createdAt =>
+
+      dateTime().withDefault(
+        currentDateAndTime,
+      )();
+
+  DateTimeColumn get updatedAt =>
+
+      dateTime().withDefault(
+        currentDateAndTime,
+      )();
+
+  // =========================================================
+  // 🔥 SAFETY UNIQUE KEYS
+  // =========================================================
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+
+    // ✅ Prevent duplicate firestore records
+    {firestoreId},
+  ];
+  BoolColumn get isDeleted =>    boolean().withDefault(const Constant(false), )();
   /*
   TextColumn get paidBy => text()(); // GPay / PhonePe / Card / Cash
+
   // Card specific
   TextColumn get cardCompany => text().nullable()(); // HDFC / ICICI / SBI
+
   DateTimeColumn get ccPaidOn => dateTime().nullable()(); // Credit card due date
 
   // Rewards
-  RealColumn get rewardPoints => real().withDefault(const Constant(0.0))();
-  RealColumn get cashback => real().withDefault(const Constant(0.0))();
+  RealColumn get rewardPoints =>
+      real().withDefault(
+        const Constant(0.0),
+      )();
+
+  RealColumn get cashback =>
+      real().withDefault(
+        const Constant(0.0),
+      )();
 
   // Date & Month
-  DateTimeColumn get date => dateTime()();
-  TextColumn get month => text()(); // "January 2025" for easy grouping
-
-  // Sync
-  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
-  TextColumn get firestoreId => text().nullable()();
-
-  // Timestamps
-  DateTimeColumn get createdAt => dateTime()();
-  DateTimeColumn get updatedAt => dateTime()();*/
+  TextColumn get month => text()();
+  */
 }
 
 class Categories extends Table {
 
-  IntColumn get id => integer().autoIncrement()();
+  // =========================================================
+  // 🔥 PRIMARY KEY
+  // =========================================================
 
-  TextColumn get userId => text()();
+  IntColumn get id =>
+      integer().autoIncrement()();
 
-  TextColumn get name => text()();
+  // =========================================================
+  // 🔥 USER
+  // =========================================================
 
-  IntColumn get colorValue => integer()();
+  TextColumn get userId =>
+      text()();
 
-  IntColumn get iconCodePoint => integer()();
+  // =========================================================
+  // 🔥 SYNC
+  // =========================================================
 
-  TextColumn get keywords => text()();
+  BoolColumn get isSynced =>
 
+      boolean().withDefault(
+        const Constant(false),
+      )();
+
+  TextColumn get firestoreId =>
+
+      text().nullable()();
+
+  // =========================================================
+  // 🔥 CATEGORY INFO
+  // =========================================================
+
+  TextColumn get name =>
+      text()();
+
+  IntColumn get colorValue =>
+      integer()();
+
+  IntColumn get iconCodePoint =>
+      integer()();
+
+  TextColumn get keywords =>
+      text()();
+
+  // =========================================================
+  // 🔥 TIMESTAMPS
+  // =========================================================
+
+  DateTimeColumn get createdAt =>
+
+      dateTime().withDefault(
+        currentDateAndTime,
+      )();
+
+  DateTimeColumn get updatedAt =>
+
+      dateTime().withDefault(
+        currentDateAndTime,
+      )();
+
+  // =========================================================
+  // 🔥 SAFETY UNIQUE KEYS
+  // =========================================================
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+
+    // ✅ Prevent duplicate categories
+    // per user
+
+    {userId, name},
+
+    // ✅ Prevent duplicate firestore docs
+
+    {firestoreId},
+  ];
+  BoolColumn get isDeleted =>    boolean().withDefault(const Constant(false), )();
 }

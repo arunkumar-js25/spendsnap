@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:spendsnap/data/db/database.dart';
 import 'package:spendsnap/features/auth/presentation/auth_wrapper.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Firebase.initializeApp();
-
+  appDatabase = AppDatabase();
   runApp(const MyApp());
 }
 

@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:spendsnap/core/utils/sync_service.dart';
 
 import 'package:spendsnap/data/db/database.dart';
 
@@ -14,7 +15,7 @@ class ManageCategoriesScreen extends StatefulWidget {
 class _ManageCategoriesScreenState
     extends State<ManageCategoriesScreen> {
 
-  final db = AppDatabase();
+  final db = appDatabase;
 
   List<Category> categories = [];
 
@@ -344,9 +345,13 @@ class _ManageCategoriesScreenState
                             selectedIcon,
 
                         keywords: keywords,
+
+                        //isSynced: false,
+                        //updatedAt: DateTime.now(),
                       ),
                     );
 
+                    await SyncService().syncAll();
                     if (!mounted) return;
 
                     Navigator.pop(context);
@@ -536,6 +541,33 @@ class _ManageCategoriesScreenState
                 ElevatedButton(
                   onPressed: () async {
 
+                    final user = FirebaseAuth.instance.currentUser;
+
+                    if (user == null) return;
+                    final newName =  nameController.text.trim();
+                    final isUsed = await db.isCategoryUsed(
+                          category.name,
+                          user.uid,
+                        );
+                    if (isUsed && newName != category.name) {
+
+                        if (!mounted) return;
+
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(
+
+                          const SnackBar(
+
+                            content: Text(
+                              'Category already used in expenses. Rename not allowed.',
+                            ),
+                          ),
+                        );
+
+                        return;
+                      }
+
+
                     final updated =
                         category.copyWith(
 
@@ -548,10 +580,13 @@ class _ManageCategoriesScreenState
                       colorValue: selectedColor,
 
                       iconCodePoint: selectedIcon,
+                        updatedAt: DateTime.now(),
+
+                      isSynced: false,
                     );
 
                     await db.updateCategory(updated);
-
+                    await SyncService().syncAll();
                     if (!mounted) return;
 
                     Navigator.pop(context);
@@ -626,7 +661,36 @@ class _ManageCategoriesScreenState
 
                       onPressed: () async {
 
-                        await db.deleteCategory(c.id);
+                         final isUsed =
+                            await db
+                                .isCategoryUsed(
+                          c.name,
+                          c.userId,
+                        );
+
+                        // ❌ block delete
+                        if (isUsed) {
+
+                          if (!mounted) return;
+
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(
+
+                            const SnackBar(
+
+                              content: Text(
+                                'Cannot delete category used in expenses.',
+                              ),
+                            ),
+                          );
+
+                          return;
+                        }
+
+                        // ✅ delete allowed
+                        //await db.deleteCategory(c.id,);
+                        await SyncService().deleteCategoryFromCloud(c);
 
                         _loadCategories();
                       },

@@ -23,7 +23,7 @@ class AppDatabase extends _$AppDatabase {
   }*/
   Future<List<Expense>> getUserExpenses(String userId) {
     return (select(expenses)
-          ..where((tbl) => tbl.userId.equals(userId)))
+          ..where((tbl) => tbl.userId.equals(userId) & tbl.isDeleted.equals(false)))
         .get();
   }
 
@@ -42,6 +42,26 @@ class AppDatabase extends _$AppDatabase {
     return (delete(expenses)..where((tbl) => tbl.id.equals(id))).go();
   }
 
+  Future<List<Expense>> getUnsyncedExpenses() {
+    return (select(expenses)
+          ..where((tbl) =>
+              tbl.isSynced.equals(false)))
+        .get();
+  }
+
+  Future<bool> expenseExistsByFirestoreId(
+    String firestoreId) async {
+
+  final result =
+      await (select(expenses)
+            ..where((tbl) =>
+                tbl.firestoreId.equals(
+                    firestoreId)))
+          .get();
+
+  return result.isNotEmpty;
+}
+
   // CRUD operations for Categories
   Future<int> insertCategory(CategoriesCompanion category) {
     return into(categories).insert(category);
@@ -53,13 +73,50 @@ class AppDatabase extends _$AppDatabase {
   Future<void> deleteCategory(int id) async {
 
   await (delete(categories)
-        ..where((tbl) => tbl.id.equals(id)))
+        ..where((tbl) => tbl.id.equals(id) & tbl.isDeleted.equals(false)))
       .go();
+}
+
+Future<List<Category>> getUnsyncedCategories() {
+  return (select(categories)
+        ..where((tbl) =>
+            tbl.isSynced.equals(false)))
+      .get();
+}
+Future<bool> categoryExistsByFirestoreId(
+    String firestoreId) async {
+
+  final result =
+      await (select(categories)
+            ..where((tbl) =>
+                tbl.firestoreId.equals(
+                    firestoreId)))
+          .get();
+
+  return result.isNotEmpty;
+}
+
+Future<bool> isCategoryUsed(
+    String categoryName,
+    String userId,
+) async {
+
+  final result =
+      await (select(expenses)
+            ..where((tbl) =>
+
+                tbl.userId.equals(userId) &
+
+                tbl.category.equals(
+                    categoryName)))
+          .get();
+
+  return result.isNotEmpty;
 }
 
   Future<List<Category>> getUserCategories(String userId) {
     return (select(categories)
-          ..where((tbl) => tbl.userId.equals(userId)))
+          ..where((tbl) => tbl.userId.equals(userId) & tbl.isDeleted.equals(false)))
         .get();
   }
 
@@ -150,3 +207,5 @@ LazyDatabase _openConnection() {
     return NativeDatabase(file);
   });
 }
+
+late final AppDatabase appDatabase;

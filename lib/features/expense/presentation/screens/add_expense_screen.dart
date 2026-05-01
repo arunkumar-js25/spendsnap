@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:spendsnap/core/utils/sync_service.dart';
 import 'package:spendsnap/data/db/database.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -109,8 +110,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           amount: amount,
           type: type,
           date: DateTime.now(),
-          createdAt: DateTime.now(),
-        ),
+              ),
       );
     } else {
       await widget.db.updateExpense(
@@ -120,10 +120,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           category: category,
           amount: amount,
           type: type,
+          updatedAt: DateTime.now(),
+          isSynced: false,
         ),
       );
     }
-
+    await SyncService().syncAll();
     Navigator.pop(context, true);
   }
 

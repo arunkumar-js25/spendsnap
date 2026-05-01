@@ -30,6 +30,32 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _isSyncedMeta = const VerificationMeta(
+    'isSynced',
+  );
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+    'is_synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _firestoreIdMeta = const VerificationMeta(
+    'firestoreId',
+  );
+  @override
+  late final GeneratedColumn<String> firestoreId = GeneratedColumn<String>(
+    'firestore_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _descriptionMeta = const VerificationMeta(
     'description',
   );
@@ -88,18 +114,50 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     aliasedName,
     false,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
   );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     userId,
+    isSynced,
+    firestoreId,
     description,
     category,
     amount,
     type,
     date,
     createdAt,
+    updatedAt,
+    isDeleted,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -123,6 +181,21 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       );
     } else if (isInserting) {
       context.missing(_userIdMeta);
+    }
+    if (data.containsKey('is_synced')) {
+      context.handle(
+        _isSyncedMeta,
+        isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
+      );
+    }
+    if (data.containsKey('firestore_id')) {
+      context.handle(
+        _firestoreIdMeta,
+        firestoreId.isAcceptableOrUnknown(
+          data['firestore_id']!,
+          _firestoreIdMeta,
+        ),
+      );
     }
     if (data.containsKey('description')) {
       context.handle(
@@ -172,14 +245,28 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         _createdAtMeta,
         createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
       );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
     }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {firestoreId},
+  ];
   @override
   Expense map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -192,6 +279,14 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         DriftSqlType.string,
         data['${effectivePrefix}user_id'],
       )!,
+      isSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_synced'],
+      )!,
+      firestoreId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}firestore_id'],
+      ),
       description: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}description'],
@@ -216,6 +311,14 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      isDeleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_deleted'],
+      )!,
     );
   }
 
@@ -228,33 +331,47 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
 class Expense extends DataClass implements Insertable<Expense> {
   final int id;
   final String userId;
+  final bool isSynced;
+  final String? firestoreId;
   final String description;
   final String category;
   final double amount;
   final String type;
   final DateTime date;
   final DateTime createdAt;
+  final DateTime updatedAt;
+  final bool isDeleted;
   const Expense({
     required this.id,
     required this.userId,
+    required this.isSynced,
+    this.firestoreId,
     required this.description,
     required this.category,
     required this.amount,
     required this.type,
     required this.date,
     required this.createdAt,
+    required this.updatedAt,
+    required this.isDeleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['user_id'] = Variable<String>(userId);
+    map['is_synced'] = Variable<bool>(isSynced);
+    if (!nullToAbsent || firestoreId != null) {
+      map['firestore_id'] = Variable<String>(firestoreId);
+    }
     map['description'] = Variable<String>(description);
     map['category'] = Variable<String>(category);
     map['amount'] = Variable<double>(amount);
     map['type'] = Variable<String>(type);
     map['date'] = Variable<DateTime>(date);
     map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['is_deleted'] = Variable<bool>(isDeleted);
     return map;
   }
 
@@ -262,12 +379,18 @@ class Expense extends DataClass implements Insertable<Expense> {
     return ExpensesCompanion(
       id: Value(id),
       userId: Value(userId),
+      isSynced: Value(isSynced),
+      firestoreId: firestoreId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firestoreId),
       description: Value(description),
       category: Value(category),
       amount: Value(amount),
       type: Value(type),
       date: Value(date),
       createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      isDeleted: Value(isDeleted),
     );
   }
 
@@ -279,12 +402,16 @@ class Expense extends DataClass implements Insertable<Expense> {
     return Expense(
       id: serializer.fromJson<int>(json['id']),
       userId: serializer.fromJson<String>(json['userId']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
+      firestoreId: serializer.fromJson<String?>(json['firestoreId']),
       description: serializer.fromJson<String>(json['description']),
       category: serializer.fromJson<String>(json['category']),
       amount: serializer.fromJson<double>(json['amount']),
       type: serializer.fromJson<String>(json['type']),
       date: serializer.fromJson<DateTime>(json['date']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
     );
   }
   @override
@@ -293,38 +420,54 @@ class Expense extends DataClass implements Insertable<Expense> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'userId': serializer.toJson<String>(userId),
+      'isSynced': serializer.toJson<bool>(isSynced),
+      'firestoreId': serializer.toJson<String?>(firestoreId),
       'description': serializer.toJson<String>(description),
       'category': serializer.toJson<String>(category),
       'amount': serializer.toJson<double>(amount),
       'type': serializer.toJson<String>(type),
       'date': serializer.toJson<DateTime>(date),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
     };
   }
 
   Expense copyWith({
     int? id,
     String? userId,
+    bool? isSynced,
+    Value<String?> firestoreId = const Value.absent(),
     String? description,
     String? category,
     double? amount,
     String? type,
     DateTime? date,
     DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isDeleted,
   }) => Expense(
     id: id ?? this.id,
     userId: userId ?? this.userId,
+    isSynced: isSynced ?? this.isSynced,
+    firestoreId: firestoreId.present ? firestoreId.value : this.firestoreId,
     description: description ?? this.description,
     category: category ?? this.category,
     amount: amount ?? this.amount,
     type: type ?? this.type,
     date: date ?? this.date,
     createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    isDeleted: isDeleted ?? this.isDeleted,
   );
   Expense copyWithCompanion(ExpensesCompanion data) {
     return Expense(
       id: data.id.present ? data.id.value : this.id,
       userId: data.userId.present ? data.userId.value : this.userId,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+      firestoreId: data.firestoreId.present
+          ? data.firestoreId.value
+          : this.firestoreId,
       description: data.description.present
           ? data.description.value
           : this.description,
@@ -333,6 +476,8 @@ class Expense extends DataClass implements Insertable<Expense> {
       type: data.type.present ? data.type.value : this.type,
       date: data.date.present ? data.date.value : this.date,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
     );
   }
 
@@ -341,12 +486,16 @@ class Expense extends DataClass implements Insertable<Expense> {
     return (StringBuffer('Expense(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('firestoreId: $firestoreId, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
           ..write('amount: $amount, ')
           ..write('type: $type, ')
           ..write('date: $date, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('isDeleted: $isDeleted')
           ..write(')'))
         .toString();
   }
@@ -355,12 +504,16 @@ class Expense extends DataClass implements Insertable<Expense> {
   int get hashCode => Object.hash(
     id,
     userId,
+    isSynced,
+    firestoreId,
     description,
     category,
     amount,
     type,
     date,
     createdAt,
+    updatedAt,
+    isDeleted,
   );
   @override
   bool operator ==(Object other) =>
@@ -368,90 +521,121 @@ class Expense extends DataClass implements Insertable<Expense> {
       (other is Expense &&
           other.id == this.id &&
           other.userId == this.userId &&
+          other.isSynced == this.isSynced &&
+          other.firestoreId == this.firestoreId &&
           other.description == this.description &&
           other.category == this.category &&
           other.amount == this.amount &&
           other.type == this.type &&
           other.date == this.date &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.isDeleted == this.isDeleted);
 }
 
 class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<int> id;
   final Value<String> userId;
+  final Value<bool> isSynced;
+  final Value<String?> firestoreId;
   final Value<String> description;
   final Value<String> category;
   final Value<double> amount;
   final Value<String> type;
   final Value<DateTime> date;
   final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<bool> isDeleted;
   const ExpensesCompanion({
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.firestoreId = const Value.absent(),
     this.description = const Value.absent(),
     this.category = const Value.absent(),
     this.amount = const Value.absent(),
     this.type = const Value.absent(),
     this.date = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.isDeleted = const Value.absent(),
   });
   ExpensesCompanion.insert({
     this.id = const Value.absent(),
     required String userId,
+    this.isSynced = const Value.absent(),
+    this.firestoreId = const Value.absent(),
     required String description,
     required String category,
     required double amount,
     required String type,
     required DateTime date,
-    required DateTime createdAt,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.isDeleted = const Value.absent(),
   }) : userId = Value(userId),
        description = Value(description),
        category = Value(category),
        amount = Value(amount),
        type = Value(type),
-       date = Value(date),
-       createdAt = Value(createdAt);
+       date = Value(date);
   static Insertable<Expense> custom({
     Expression<int>? id,
     Expression<String>? userId,
+    Expression<bool>? isSynced,
+    Expression<String>? firestoreId,
     Expression<String>? description,
     Expression<String>? category,
     Expression<double>? amount,
     Expression<String>? type,
     Expression<DateTime>? date,
     Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<bool>? isDeleted,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (userId != null) 'user_id': userId,
+      if (isSynced != null) 'is_synced': isSynced,
+      if (firestoreId != null) 'firestore_id': firestoreId,
       if (description != null) 'description': description,
       if (category != null) 'category': category,
       if (amount != null) 'amount': amount,
       if (type != null) 'type': type,
       if (date != null) 'date': date,
       if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (isDeleted != null) 'is_deleted': isDeleted,
     });
   }
 
   ExpensesCompanion copyWith({
     Value<int>? id,
     Value<String>? userId,
+    Value<bool>? isSynced,
+    Value<String?>? firestoreId,
     Value<String>? description,
     Value<String>? category,
     Value<double>? amount,
     Value<String>? type,
     Value<DateTime>? date,
     Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<bool>? isDeleted,
   }) {
     return ExpensesCompanion(
       id: id ?? this.id,
       userId: userId ?? this.userId,
+      isSynced: isSynced ?? this.isSynced,
+      firestoreId: firestoreId ?? this.firestoreId,
       description: description ?? this.description,
       category: category ?? this.category,
       amount: amount ?? this.amount,
       type: type ?? this.type,
       date: date ?? this.date,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
@@ -463,6 +647,12 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     }
     if (userId.present) {
       map['user_id'] = Variable<String>(userId.value);
+    }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
+    if (firestoreId.present) {
+      map['firestore_id'] = Variable<String>(firestoreId.value);
     }
     if (description.present) {
       map['description'] = Variable<String>(description.value);
@@ -482,6 +672,12 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
     return map;
   }
 
@@ -490,12 +686,16 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     return (StringBuffer('ExpensesCompanion(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('firestoreId: $firestoreId, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
           ..write('amount: $amount, ')
           ..write('type: $type, ')
           ..write('date: $date, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('isDeleted: $isDeleted')
           ..write(')'))
         .toString();
   }
@@ -528,6 +728,32 @@ class $CategoriesTable extends Categories
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isSyncedMeta = const VerificationMeta(
+    'isSynced',
+  );
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+    'is_synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _firestoreIdMeta = const VerificationMeta(
+    'firestoreId',
+  );
+  @override
+  late final GeneratedColumn<String> firestoreId = GeneratedColumn<String>(
+    'firestore_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
@@ -571,14 +797,58 @@ class $CategoriesTable extends Categories
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     userId,
+    isSynced,
+    firestoreId,
     name,
     colorValue,
     iconCodePoint,
     keywords,
+    createdAt,
+    updatedAt,
+    isDeleted,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -602,6 +872,21 @@ class $CategoriesTable extends Categories
       );
     } else if (isInserting) {
       context.missing(_userIdMeta);
+    }
+    if (data.containsKey('is_synced')) {
+      context.handle(
+        _isSyncedMeta,
+        isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
+      );
+    }
+    if (data.containsKey('firestore_id')) {
+      context.handle(
+        _firestoreIdMeta,
+        firestoreId.isAcceptableOrUnknown(
+          data['firestore_id']!,
+          _firestoreIdMeta,
+        ),
+      );
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -638,11 +923,34 @@ class $CategoriesTable extends Categories
     } else if (isInserting) {
       context.missing(_keywordsMeta);
     }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {userId, name},
+    {firestoreId},
+  ];
   @override
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -655,6 +963,14 @@ class $CategoriesTable extends Categories
         DriftSqlType.string,
         data['${effectivePrefix}user_id'],
       )!,
+      isSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_synced'],
+      )!,
+      firestoreId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}firestore_id'],
+      ),
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -671,6 +987,18 @@ class $CategoriesTable extends Categories
         DriftSqlType.string,
         data['${effectivePrefix}keywords'],
       )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      isDeleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_deleted'],
+      )!,
     );
   }
 
@@ -683,27 +1011,44 @@ class $CategoriesTable extends Categories
 class Category extends DataClass implements Insertable<Category> {
   final int id;
   final String userId;
+  final bool isSynced;
+  final String? firestoreId;
   final String name;
   final int colorValue;
   final int iconCodePoint;
   final String keywords;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final bool isDeleted;
   const Category({
     required this.id,
     required this.userId,
+    required this.isSynced,
+    this.firestoreId,
     required this.name,
     required this.colorValue,
     required this.iconCodePoint,
     required this.keywords,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.isDeleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['user_id'] = Variable<String>(userId);
+    map['is_synced'] = Variable<bool>(isSynced);
+    if (!nullToAbsent || firestoreId != null) {
+      map['firestore_id'] = Variable<String>(firestoreId);
+    }
     map['name'] = Variable<String>(name);
     map['color_value'] = Variable<int>(colorValue);
     map['icon_code_point'] = Variable<int>(iconCodePoint);
     map['keywords'] = Variable<String>(keywords);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['is_deleted'] = Variable<bool>(isDeleted);
     return map;
   }
 
@@ -711,10 +1056,17 @@ class Category extends DataClass implements Insertable<Category> {
     return CategoriesCompanion(
       id: Value(id),
       userId: Value(userId),
+      isSynced: Value(isSynced),
+      firestoreId: firestoreId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firestoreId),
       name: Value(name),
       colorValue: Value(colorValue),
       iconCodePoint: Value(iconCodePoint),
       keywords: Value(keywords),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      isDeleted: Value(isDeleted),
     );
   }
 
@@ -726,10 +1078,15 @@ class Category extends DataClass implements Insertable<Category> {
     return Category(
       id: serializer.fromJson<int>(json['id']),
       userId: serializer.fromJson<String>(json['userId']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
+      firestoreId: serializer.fromJson<String?>(json['firestoreId']),
       name: serializer.fromJson<String>(json['name']),
       colorValue: serializer.fromJson<int>(json['colorValue']),
       iconCodePoint: serializer.fromJson<int>(json['iconCodePoint']),
       keywords: serializer.fromJson<String>(json['keywords']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
     );
   }
   @override
@@ -738,32 +1095,51 @@ class Category extends DataClass implements Insertable<Category> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'userId': serializer.toJson<String>(userId),
+      'isSynced': serializer.toJson<bool>(isSynced),
+      'firestoreId': serializer.toJson<String?>(firestoreId),
       'name': serializer.toJson<String>(name),
       'colorValue': serializer.toJson<int>(colorValue),
       'iconCodePoint': serializer.toJson<int>(iconCodePoint),
       'keywords': serializer.toJson<String>(keywords),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
     };
   }
 
   Category copyWith({
     int? id,
     String? userId,
+    bool? isSynced,
+    Value<String?> firestoreId = const Value.absent(),
     String? name,
     int? colorValue,
     int? iconCodePoint,
     String? keywords,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isDeleted,
   }) => Category(
     id: id ?? this.id,
     userId: userId ?? this.userId,
+    isSynced: isSynced ?? this.isSynced,
+    firestoreId: firestoreId.present ? firestoreId.value : this.firestoreId,
     name: name ?? this.name,
     colorValue: colorValue ?? this.colorValue,
     iconCodePoint: iconCodePoint ?? this.iconCodePoint,
     keywords: keywords ?? this.keywords,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    isDeleted: isDeleted ?? this.isDeleted,
   );
   Category copyWithCompanion(CategoriesCompanion data) {
     return Category(
       id: data.id.present ? data.id.value : this.id,
       userId: data.userId.present ? data.userId.value : this.userId,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+      firestoreId: data.firestoreId.present
+          ? data.firestoreId.value
+          : this.firestoreId,
       name: data.name.present ? data.name.value : this.name,
       colorValue: data.colorValue.present
           ? data.colorValue.value
@@ -772,6 +1148,9 @@ class Category extends DataClass implements Insertable<Category> {
           ? data.iconCodePoint.value
           : this.iconCodePoint,
       keywords: data.keywords.present ? data.keywords.value : this.keywords,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
     );
   }
 
@@ -780,51 +1159,87 @@ class Category extends DataClass implements Insertable<Category> {
     return (StringBuffer('Category(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('firestoreId: $firestoreId, ')
           ..write('name: $name, ')
           ..write('colorValue: $colorValue, ')
           ..write('iconCodePoint: $iconCodePoint, ')
-          ..write('keywords: $keywords')
+          ..write('keywords: $keywords, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('isDeleted: $isDeleted')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, userId, name, colorValue, iconCodePoint, keywords);
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    isSynced,
+    firestoreId,
+    name,
+    colorValue,
+    iconCodePoint,
+    keywords,
+    createdAt,
+    updatedAt,
+    isDeleted,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
           other.userId == this.userId &&
+          other.isSynced == this.isSynced &&
+          other.firestoreId == this.firestoreId &&
           other.name == this.name &&
           other.colorValue == this.colorValue &&
           other.iconCodePoint == this.iconCodePoint &&
-          other.keywords == this.keywords);
+          other.keywords == this.keywords &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.isDeleted == this.isDeleted);
 }
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<int> id;
   final Value<String> userId;
+  final Value<bool> isSynced;
+  final Value<String?> firestoreId;
   final Value<String> name;
   final Value<int> colorValue;
   final Value<int> iconCodePoint;
   final Value<String> keywords;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<bool> isDeleted;
   const CategoriesCompanion({
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.firestoreId = const Value.absent(),
     this.name = const Value.absent(),
     this.colorValue = const Value.absent(),
     this.iconCodePoint = const Value.absent(),
     this.keywords = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.isDeleted = const Value.absent(),
   });
   CategoriesCompanion.insert({
     this.id = const Value.absent(),
     required String userId,
+    this.isSynced = const Value.absent(),
+    this.firestoreId = const Value.absent(),
     required String name,
     required int colorValue,
     required int iconCodePoint,
     required String keywords,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.isDeleted = const Value.absent(),
   }) : userId = Value(userId),
        name = Value(name),
        colorValue = Value(colorValue),
@@ -833,36 +1248,56 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   static Insertable<Category> custom({
     Expression<int>? id,
     Expression<String>? userId,
+    Expression<bool>? isSynced,
+    Expression<String>? firestoreId,
     Expression<String>? name,
     Expression<int>? colorValue,
     Expression<int>? iconCodePoint,
     Expression<String>? keywords,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<bool>? isDeleted,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (userId != null) 'user_id': userId,
+      if (isSynced != null) 'is_synced': isSynced,
+      if (firestoreId != null) 'firestore_id': firestoreId,
       if (name != null) 'name': name,
       if (colorValue != null) 'color_value': colorValue,
       if (iconCodePoint != null) 'icon_code_point': iconCodePoint,
       if (keywords != null) 'keywords': keywords,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (isDeleted != null) 'is_deleted': isDeleted,
     });
   }
 
   CategoriesCompanion copyWith({
     Value<int>? id,
     Value<String>? userId,
+    Value<bool>? isSynced,
+    Value<String?>? firestoreId,
     Value<String>? name,
     Value<int>? colorValue,
     Value<int>? iconCodePoint,
     Value<String>? keywords,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<bool>? isDeleted,
   }) {
     return CategoriesCompanion(
       id: id ?? this.id,
       userId: userId ?? this.userId,
+      isSynced: isSynced ?? this.isSynced,
+      firestoreId: firestoreId ?? this.firestoreId,
       name: name ?? this.name,
       colorValue: colorValue ?? this.colorValue,
       iconCodePoint: iconCodePoint ?? this.iconCodePoint,
       keywords: keywords ?? this.keywords,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
@@ -874,6 +1309,12 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     }
     if (userId.present) {
       map['user_id'] = Variable<String>(userId.value);
+    }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
+    if (firestoreId.present) {
+      map['firestore_id'] = Variable<String>(firestoreId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -887,6 +1328,15 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     if (keywords.present) {
       map['keywords'] = Variable<String>(keywords.value);
     }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
     return map;
   }
 
@@ -895,10 +1345,15 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     return (StringBuffer('CategoriesCompanion(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('firestoreId: $firestoreId, ')
           ..write('name: $name, ')
           ..write('colorValue: $colorValue, ')
           ..write('iconCodePoint: $iconCodePoint, ')
-          ..write('keywords: $keywords')
+          ..write('keywords: $keywords, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('isDeleted: $isDeleted')
           ..write(')'))
         .toString();
   }
@@ -920,23 +1375,31 @@ typedef $$ExpensesTableCreateCompanionBuilder =
     ExpensesCompanion Function({
       Value<int> id,
       required String userId,
+      Value<bool> isSynced,
+      Value<String?> firestoreId,
       required String description,
       required String category,
       required double amount,
       required String type,
       required DateTime date,
-      required DateTime createdAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<bool> isDeleted,
     });
 typedef $$ExpensesTableUpdateCompanionBuilder =
     ExpensesCompanion Function({
       Value<int> id,
       Value<String> userId,
+      Value<bool> isSynced,
+      Value<String?> firestoreId,
       Value<String> description,
       Value<String> category,
       Value<double> amount,
       Value<String> type,
       Value<DateTime> date,
       Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<bool> isDeleted,
     });
 
 class $$ExpensesTableFilterComposer
@@ -955,6 +1418,16 @@ class $$ExpensesTableFilterComposer
 
   ColumnFilters<String> get userId => $composableBuilder(
     column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get firestoreId => $composableBuilder(
+    column: $table.firestoreId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -987,6 +1460,16 @@ class $$ExpensesTableFilterComposer
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $$ExpensesTableOrderingComposer
@@ -1005,6 +1488,16 @@ class $$ExpensesTableOrderingComposer
 
   ColumnOrderings<String> get userId => $composableBuilder(
     column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get firestoreId => $composableBuilder(
+    column: $table.firestoreId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1037,6 +1530,16 @@ class $$ExpensesTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ExpensesTableAnnotationComposer
@@ -1053,6 +1556,14 @@ class $$ExpensesTableAnnotationComposer
 
   GeneratedColumn<String> get userId =>
       $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  GeneratedColumn<String> get firestoreId => $composableBuilder(
+    column: $table.firestoreId,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get description => $composableBuilder(
     column: $table.description,
@@ -1073,6 +1584,12 @@ class $$ExpensesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 }
 
 class $$ExpensesTableTableManager
@@ -1105,41 +1622,57 @@ class $$ExpensesTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> userId = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<String?> firestoreId = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<String> category = const Value.absent(),
                 Value<double> amount = const Value.absent(),
                 Value<String> type = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
               }) => ExpensesCompanion(
                 id: id,
                 userId: userId,
+                isSynced: isSynced,
+                firestoreId: firestoreId,
                 description: description,
                 category: category,
                 amount: amount,
                 type: type,
                 date: date,
                 createdAt: createdAt,
+                updatedAt: updatedAt,
+                isDeleted: isDeleted,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required String userId,
+                Value<bool> isSynced = const Value.absent(),
+                Value<String?> firestoreId = const Value.absent(),
                 required String description,
                 required String category,
                 required double amount,
                 required String type,
                 required DateTime date,
-                required DateTime createdAt,
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
               }) => ExpensesCompanion.insert(
                 id: id,
                 userId: userId,
+                isSynced: isSynced,
+                firestoreId: firestoreId,
                 description: description,
                 category: category,
                 amount: amount,
                 type: type,
                 date: date,
                 createdAt: createdAt,
+                updatedAt: updatedAt,
+                isDeleted: isDeleted,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -1167,19 +1700,29 @@ typedef $$CategoriesTableCreateCompanionBuilder =
     CategoriesCompanion Function({
       Value<int> id,
       required String userId,
+      Value<bool> isSynced,
+      Value<String?> firestoreId,
       required String name,
       required int colorValue,
       required int iconCodePoint,
       required String keywords,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<bool> isDeleted,
     });
 typedef $$CategoriesTableUpdateCompanionBuilder =
     CategoriesCompanion Function({
       Value<int> id,
       Value<String> userId,
+      Value<bool> isSynced,
+      Value<String?> firestoreId,
       Value<String> name,
       Value<int> colorValue,
       Value<int> iconCodePoint,
       Value<String> keywords,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<bool> isDeleted,
     });
 
 class $$CategoriesTableFilterComposer
@@ -1201,6 +1744,16 @@ class $$CategoriesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get firestoreId => $composableBuilder(
+    column: $table.firestoreId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => ColumnFilters(column),
@@ -1218,6 +1771,21 @@ class $$CategoriesTableFilterComposer
 
   ColumnFilters<String> get keywords => $composableBuilder(
     column: $table.keywords,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1241,6 +1809,16 @@ class $$CategoriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get firestoreId => $composableBuilder(
+    column: $table.firestoreId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
@@ -1260,6 +1838,21 @@ class $$CategoriesTableOrderingComposer
     column: $table.keywords,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CategoriesTableAnnotationComposer
@@ -1277,6 +1870,14 @@ class $$CategoriesTableAnnotationComposer
   GeneratedColumn<String> get userId =>
       $composableBuilder(column: $table.userId, builder: (column) => column);
 
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  GeneratedColumn<String> get firestoreId => $composableBuilder(
+    column: $table.firestoreId,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
@@ -1292,6 +1893,15 @@ class $$CategoriesTableAnnotationComposer
 
   GeneratedColumn<String> get keywords =>
       $composableBuilder(column: $table.keywords, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 }
 
 class $$CategoriesTableTableManager
@@ -1324,33 +1934,53 @@ class $$CategoriesTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> userId = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<String?> firestoreId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<int> colorValue = const Value.absent(),
                 Value<int> iconCodePoint = const Value.absent(),
                 Value<String> keywords = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
               }) => CategoriesCompanion(
                 id: id,
                 userId: userId,
+                isSynced: isSynced,
+                firestoreId: firestoreId,
                 name: name,
                 colorValue: colorValue,
                 iconCodePoint: iconCodePoint,
                 keywords: keywords,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                isDeleted: isDeleted,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required String userId,
+                Value<bool> isSynced = const Value.absent(),
+                Value<String?> firestoreId = const Value.absent(),
                 required String name,
                 required int colorValue,
                 required int iconCodePoint,
                 required String keywords,
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
               }) => CategoriesCompanion.insert(
                 id: id,
                 userId: userId,
+                isSynced: isSynced,
+                firestoreId: firestoreId,
                 name: name,
                 colorValue: colorValue,
                 iconCodePoint: iconCodePoint,
                 keywords: keywords,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                isDeleted: isDeleted,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
