@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:spendsnap/data/db/database.dart';
+import 'package:spendsnap/features/profile/presentation/profile_screen.dart';
 import 'add_expense_screen.dart';
 import 'package:spendsnap/features/scanner/presentation/qr_scanner_screen.dart';
 import 'package:spendsnap/features/expense/presentation/widgets/summary_card.dart';
@@ -23,7 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadExpenses() async {
-    final data = await db.getAllExpenses();
+    final user = FirebaseAuth.instance.currentUser;
+    final data = await db.getUserExpenses(user!.uid);
     setState(() => expenses = data);
   }
 
@@ -79,11 +82,48 @@ class _HomeScreenState extends State<HomeScreen> {
         _loadExpenses(); // ✅ refresh list
       }
   }
+
+  void _openEditScreen(Expense expense) async {
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => AddExpenseScreen(
+        db: db,
+        existingExpense: expense,
+      ),
+    ),
+  );
+
+  if (result == true) {
+    _loadExpenses();
+  }
+}
   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("SpendSnap")),
+      //appBar: AppBar(title: const Text("SpendSnap")),
+      appBar: AppBar(
+                title: const Text("SpendSnap"),
+
+                actions: [
+
+                  IconButton(
+                    icon: const Icon(Icons.person),
+
+                    onPressed: () {
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ProfileScreen(),
+                        ),
+                      );
+
+                    },
+                  ),
+                ],
+              ),
       body: Column(
             children: [
               Padding(
@@ -133,6 +173,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           return Card(
                             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             child: ListTile(
+                                onLongPress: () {
+                                  _openEditScreen(e);
+                                },
                               leading: CircleAvatar(
                                 backgroundColor:
                                     (categoryColors[e.category] ?? Colors.grey).withOpacity(0.2),

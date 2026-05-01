@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:spendsnap/features/expense/presentation/widgets/sectionTitle.dart';
 import 'package:spendsnap/data/db/database.dart';
@@ -19,7 +20,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   Future<void> _loadExpenses() async {
-    final data = await db.getAllExpenses();
+    final user = FirebaseAuth.instance.currentUser;
+    final data = await db.getUserExpenses(user!.uid);
     setState(() => expenses = data);
   }
   

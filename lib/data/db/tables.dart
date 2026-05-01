@@ -3,6 +3,8 @@ import 'package:drift/drift.dart';
 class Expenses extends Table {
   IntColumn get id => integer().autoIncrement()();
 
+  TextColumn get userId => text()();
+
   // Core fields
   TextColumn get description => text()();
   TextColumn get category => text()();

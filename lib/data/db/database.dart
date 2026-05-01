@@ -17,13 +17,23 @@ class AppDatabase extends _$AppDatabase {
 
   // CRUD operations for Expenses
   // Get all expenses from the database
-  Future<List<Expense>> getAllExpenses() {
+  /*Future<List<Expense>> getAllExpenses() {
     return select(expenses).get();
+  }*/
+  Future<List<Expense>> getUserExpenses(String userId) {
+    return (select(expenses)
+          ..where((tbl) => tbl.userId.equals(userId)))
+        .get();
   }
 
   // Insert a new expense into the database
   Future<int> insertExpense(ExpensesCompanion expense) {
     return into(expenses).insert(expense);
+  }
+
+  // Update an existing expense in the database
+  Future updateExpense(Expense expense) {
+    return update(expenses).replace(expense);
   }
 
   //Delete an expense by ID

@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:spendsnap/features/auth/presentation/auth_wrapper.dart';
 import 'package:spendsnap/features/expense/presentation/screens/main_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
+
   runApp(const MyApp());
 }
 
@@ -11,7 +17,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: const MainScreen(),
+      //home: const MainScreen(),
+      home: const AuthWrapper(),
       debugShowCheckedModeBanner: false,
     );
   }

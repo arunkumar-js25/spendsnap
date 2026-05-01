@@ -14,14 +14,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "591755881207-kq13cpin6a2o1o10ctbri59ivlqlpl8e.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.arunkumarjs25.spendsnap",
-            "certificate_hash": "38321a1b97c9656f66fe9821289b774045abda10"
-          }
-        },
-        {
           "client_id": "591755881207-k4pdpr39e6cb30o6bgenc7k7me9v1k3u.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -37,13 +29,6 @@
             {
               "client_id": "591755881207-k4pdpr39e6cb30o6bgenc7k7me9v1k3u.apps.googleusercontent.com",
               "client_type": 3
-            },
-            {
-              "client_id": "591755881207-ooqb2qo379hfio03is0hr1np5fsm9cob.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.arunkumarjs25.spendsnap"
-              }
             }
           ]
         }

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:spendsnap/data/db/database.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,6 +10,7 @@ class AddExpenseScreen extends StatefulWidget {
   final String? prefilledDesc;
   final String? prefilledCategory;
   final String? upiUri;
+  final Expense? existingExpense;
 
   const AddExpenseScreen({
     super.key,
@@ -17,6 +19,7 @@ class AddExpenseScreen extends StatefulWidget {
     this.prefilledDesc,
     this.prefilledCategory,
     this.upiUri,
+    this.existingExpense,
   });
 
   @override
@@ -30,11 +33,22 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   String category = 'Food';
   String type = 'Cash';
-  String finalUpi = '';
 
   @override
   void initState() {
     super.initState();
+
+    if (widget.existingExpense != null) {
+      final e = widget.existingExpense!;
+
+      _descController.text = e.description;
+      _amountController.text = e.amount.toString();
+
+      category = e.category;
+      type = e.type;
+
+      return;
+    }
 
     if (widget.prefilledAmount != null) {
       _amountController.text = widget.prefilledAmount.toString();
@@ -56,6 +70,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   void _saveExpense() async {
     final desc = _descController.text;
     final amount = double.tryParse(_amountController.text) ?? 0;
+    final user = FirebaseAuth.instance.currentUser;
 
     if (desc.isEmpty || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -64,16 +79,29 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       return;
     }
 
-    await widget.db.insertExpense(
-      ExpensesCompanion.insert(
-        description: desc,
-        category: category,
-        amount: amount,
-        type: type,
-        date: DateTime.now(),
-        createdAt: DateTime.now(),
-      ),
-    );
+   if (widget.existingExpense == null) {
+      await widget.db.insertExpense(
+        ExpensesCompanion.insert(
+          userId: user!.uid,
+          description: desc,
+          category: category,
+          amount: amount,
+          type: type,
+          date: DateTime.now(),
+          createdAt: DateTime.now(),
+        ),
+      );
+    } else {
+      await widget.db.updateExpense(
+        widget.existingExpense!.copyWith(
+          userId: user!.uid,
+          description: desc,
+          category: category,
+          amount: amount,
+          type: type,
+        ),
+      );
+    }
 
     Navigator.pop(context, true);
   }
@@ -108,7 +136,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       },
     );
 
-    finalUpi = uri.toString();
+    _uriController.text = uri.toString(); // Update UI with constructed URI
 
     if (!await canLaunchUrl(uri)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -150,9 +178,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     if (widget.upiUri == null) return;
 
     final uri = Uri.parse(widget.upiUri!);
-
-    finalUpi = uri.toString();
-
+    
     if (!await canLaunchUrl(uri)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("No UPI app found")),
@@ -192,7 +218,14 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Expense")),
+      //appBar: AppBar(title: const Text("Add Expense")),
+      appBar: AppBar(
+            title: Text(
+              widget.existingExpense == null
+                  ? "Add Expense"
+                  : "Edit Expense",
+            ),
+          ),
       body: SingleChildScrollView( // ✅ FIX overflow
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -208,11 +241,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             ),
             const SizedBox(height: 10),
 
-            TextField(
+            /*TextField(
               controller: _uriController,
               decoration: const InputDecoration(labelText: "URI"),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 10),*/
 
             DropdownButton<String>(
               value: category,

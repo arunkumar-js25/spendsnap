@@ -21,6 +21,15 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _descriptionMeta = const VerificationMeta(
     'description',
   );
@@ -84,6 +93,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    userId,
     description,
     category,
     amount,
@@ -105,6 +115,14 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
     }
     if (data.containsKey('description')) {
       context.handle(
@@ -170,6 +188,10 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
       description: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}description'],
@@ -205,6 +227,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
 
 class Expense extends DataClass implements Insertable<Expense> {
   final int id;
+  final String userId;
   final String description;
   final String category;
   final double amount;
@@ -213,6 +236,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   final DateTime createdAt;
   const Expense({
     required this.id,
+    required this.userId,
     required this.description,
     required this.category,
     required this.amount,
@@ -224,6 +248,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['user_id'] = Variable<String>(userId);
     map['description'] = Variable<String>(description);
     map['category'] = Variable<String>(category);
     map['amount'] = Variable<double>(amount);
@@ -236,6 +261,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   ExpensesCompanion toCompanion(bool nullToAbsent) {
     return ExpensesCompanion(
       id: Value(id),
+      userId: Value(userId),
       description: Value(description),
       category: Value(category),
       amount: Value(amount),
@@ -252,6 +278,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Expense(
       id: serializer.fromJson<int>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
       description: serializer.fromJson<String>(json['description']),
       category: serializer.fromJson<String>(json['category']),
       amount: serializer.fromJson<double>(json['amount']),
@@ -265,6 +292,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'userId': serializer.toJson<String>(userId),
       'description': serializer.toJson<String>(description),
       'category': serializer.toJson<String>(category),
       'amount': serializer.toJson<double>(amount),
@@ -276,6 +304,7 @@ class Expense extends DataClass implements Insertable<Expense> {
 
   Expense copyWith({
     int? id,
+    String? userId,
     String? description,
     String? category,
     double? amount,
@@ -284,6 +313,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     DateTime? createdAt,
   }) => Expense(
     id: id ?? this.id,
+    userId: userId ?? this.userId,
     description: description ?? this.description,
     category: category ?? this.category,
     amount: amount ?? this.amount,
@@ -294,6 +324,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   Expense copyWithCompanion(ExpensesCompanion data) {
     return Expense(
       id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
       description: data.description.present
           ? data.description.value
           : this.description,
@@ -309,6 +340,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   String toString() {
     return (StringBuffer('Expense(')
           ..write('id: $id, ')
+          ..write('userId: $userId, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
           ..write('amount: $amount, ')
@@ -320,13 +352,22 @@ class Expense extends DataClass implements Insertable<Expense> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, description, category, amount, type, date, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    description,
+    category,
+    amount,
+    type,
+    date,
+    createdAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Expense &&
           other.id == this.id &&
+          other.userId == this.userId &&
           other.description == this.description &&
           other.category == this.category &&
           other.amount == this.amount &&
@@ -337,6 +378,7 @@ class Expense extends DataClass implements Insertable<Expense> {
 
 class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<int> id;
+  final Value<String> userId;
   final Value<String> description;
   final Value<String> category;
   final Value<double> amount;
@@ -345,6 +387,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<DateTime> createdAt;
   const ExpensesCompanion({
     this.id = const Value.absent(),
+    this.userId = const Value.absent(),
     this.description = const Value.absent(),
     this.category = const Value.absent(),
     this.amount = const Value.absent(),
@@ -354,13 +397,15 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   });
   ExpensesCompanion.insert({
     this.id = const Value.absent(),
+    required String userId,
     required String description,
     required String category,
     required double amount,
     required String type,
     required DateTime date,
     required DateTime createdAt,
-  }) : description = Value(description),
+  }) : userId = Value(userId),
+       description = Value(description),
        category = Value(category),
        amount = Value(amount),
        type = Value(type),
@@ -368,6 +413,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
        createdAt = Value(createdAt);
   static Insertable<Expense> custom({
     Expression<int>? id,
+    Expression<String>? userId,
     Expression<String>? description,
     Expression<String>? category,
     Expression<double>? amount,
@@ -377,6 +423,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
       if (description != null) 'description': description,
       if (category != null) 'category': category,
       if (amount != null) 'amount': amount,
@@ -388,6 +435,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
 
   ExpensesCompanion copyWith({
     Value<int>? id,
+    Value<String>? userId,
     Value<String>? description,
     Value<String>? category,
     Value<double>? amount,
@@ -397,6 +445,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   }) {
     return ExpensesCompanion(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       description: description ?? this.description,
       category: category ?? this.category,
       amount: amount ?? this.amount,
@@ -411,6 +460,9 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
     }
     if (description.present) {
       map['description'] = Variable<String>(description.value);
@@ -437,6 +489,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   String toString() {
     return (StringBuffer('ExpensesCompanion(')
           ..write('id: $id, ')
+          ..write('userId: $userId, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
           ..write('amount: $amount, ')
@@ -462,6 +515,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 typedef $$ExpensesTableCreateCompanionBuilder =
     ExpensesCompanion Function({
       Value<int> id,
+      required String userId,
       required String description,
       required String category,
       required double amount,
@@ -472,6 +526,7 @@ typedef $$ExpensesTableCreateCompanionBuilder =
 typedef $$ExpensesTableUpdateCompanionBuilder =
     ExpensesCompanion Function({
       Value<int> id,
+      Value<String> userId,
       Value<String> description,
       Value<String> category,
       Value<double> amount,
@@ -491,6 +546,11 @@ class $$ExpensesTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -539,6 +599,11 @@ class $$ExpensesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get description => $composableBuilder(
     column: $table.description,
     builder: (column) => ColumnOrderings(column),
@@ -581,6 +646,9 @@ class $$ExpensesTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
 
   GeneratedColumn<String> get description => $composableBuilder(
     column: $table.description,
@@ -632,6 +700,7 @@ class $$ExpensesTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<String> category = const Value.absent(),
                 Value<double> amount = const Value.absent(),
@@ -640,6 +709,7 @@ class $$ExpensesTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
               }) => ExpensesCompanion(
                 id: id,
+                userId: userId,
                 description: description,
                 category: category,
                 amount: amount,
@@ -650,6 +720,7 @@ class $$ExpensesTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                required String userId,
                 required String description,
                 required String category,
                 required double amount,
@@ -658,6 +729,7 @@ class $$ExpensesTableTableManager
                 required DateTime createdAt,
               }) => ExpensesCompanion.insert(
                 id: id,
+                userId: userId,
                 description: description,
                 category: category,
                 amount: amount,
