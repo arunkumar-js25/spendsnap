@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "591755881207-h165194bkiutjg8acmk7cu9jn61jbgle.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.arunkumarjs25.spendsnap",
+            "certificate_hash": "46180f7330868332fb377de422111ca009b04372"
+          }
+        },
+        {
           "client_id": "591755881207-kq13cpin6a2o1o10ctbri59ivlqlpl8e.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
