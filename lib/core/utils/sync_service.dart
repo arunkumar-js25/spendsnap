@@ -8,12 +8,8 @@ import 'package:spendsnap/data/db/database.dart';
 
 class SyncService {
 
-  final FirebaseFirestore _firestore =
-      FirebaseFirestore.instance;
-
-  final FirebaseAuth _auth =
-      FirebaseAuth.instance;
-
+  final FirebaseFirestore _firestore =  FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final db = appDatabase;
 
   // =========================================================
@@ -27,8 +23,13 @@ class SyncService {
 
   Future<void> syncAll() async {
 
-    final enabled =
-      await _isSyncEnabled();
+    final enabled = await _isSyncEnabled();
+    final user = FirebaseAuth.instance.currentUser;
+
+    debugPrint('SYNC START');
+    debugPrint('SYNC ENABLED: $enabled');
+    debugPrint('SYNC USER UID: ${user?.uid}');
+    debugPrint('SYNC USER EMAIL: ${user?.email}');
 
     // ❌ sync disabled
     if (!enabled) {
@@ -57,8 +58,7 @@ class SyncService {
 
     if (user == null) return;
 
-    final unsyncedExpenses =
-        await db.getUnsyncedExpenses();
+    final unsyncedExpenses =  await db.getUnsyncedExpenses();
 
     for (final expense in unsyncedExpenses) {
 
