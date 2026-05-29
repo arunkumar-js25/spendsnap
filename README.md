@@ -12,7 +12,6 @@ It simplifies expense management using:
 * ☁️ Scalable architecture
 
 ---
-
 # ✨ Features
 
 ## 📷 QR-Based Expense Tracking
