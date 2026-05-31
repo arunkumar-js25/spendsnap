@@ -294,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-      floatingActionButton: Column(
+      floatingActionButton: Column( 
         mainAxisSize: MainAxisSize.min,
         children: [
           FloatingActionButton(
