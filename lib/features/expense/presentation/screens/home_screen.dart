@@ -297,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: Column( 
         mainAxisSize: MainAxisSize.min,
         children: [
-          FloatingActionButton(
+          FloatingActionButton( 
             heroTag: "scan",
             onPressed: _openScanner,
             child: const Icon(Icons.qr_code_scanner),
