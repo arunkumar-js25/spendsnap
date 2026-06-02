@@ -302,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: _openScanner,
             child: const Icon(Icons.qr_code_scanner),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 10), 
           FloatingActionButton(
             heroTag: "add",
             onPressed: _openAddScreen, 
